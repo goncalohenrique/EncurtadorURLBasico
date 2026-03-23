@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encurtador de URL</title>
+    <style>
+        body 
+        { 
+            font-family: Arial, sans-serif;
+            max-width: 500px; 
+            margin: 50px auto;
+            padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; width: 100%; }
+        button:hover { background-color: #0056b3; }
+        #resultado { margin-top: 20px; padding: 15px; background-color: #e9ecef; display: none; border-radius: 5px; text-align: center; }
+        #resultado a { font-size: 1.2em; font-weight: bold; color: #28a745; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<h2>Encurte sua URL</h2>
+<form id="formEncurtador">
+    <div class="form-group">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" required>
+    </div>
+    <div class="form-group">
+        <label for="idade">Idade:</label>
+        <input type="number" id="idade" required>
+    </div>
+    <div class="form-group">
+        <label for="urlOriginal">URL Original:</label>
+        <input type="url" id="urlOriginal" placeholder="https://exemplo.com" required>
+    </div>
+    <button type="submit">Encurtar URL</button>
+</form>
+
+<div id="resultado">
+    <p>Sua URL encurtada é:</p>
+    <a id="linkEncurtado" href="#" target="_blank"></a>
+    <p><small>O download do seu arquivo com as informações iniciará em instantes...</small></p>
+</div>
+
+<script>
+    document.getElementById('formEncurtador').addEventListener('submit', async function(e) {
+        e.preventDefault(); 
+
+        const dados = {
+            Nome: document.getElementById('nome').value,
+            Idade: parseInt(document.getElementById('idade').value),
+            UrlOriginal: document.getElementById('urlOriginal').value
+        };
+
+        try {
+            // Envia os dados para a API no C#
+            const resposta = await fetch('/api/encurtar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+
+            if (resposta.ok) {
+                const resultado = await resposta.json();
+
+                // Exibe a nova URL na tela
+                const divResultado = document.getElementById('resultado');
+                const linkEncurtado = document.getElementById('linkEncurtado');
+
+                linkEncurtado.href = resultado.urlEncurtada;
+                linkEncurtado.textContent = resultado.urlEncurtada;
+                divResultado.style.display = 'block';
+
+                // Lógica para forçar o download do arquivo .txt
+                const blob = new Blob([resultado.conteudoTexto], { type: 'text/plain' });
+                const linkDownload = document.createElement('a');
+                linkDownload.href = window.URL.createObjectURL(blob);
+                linkDownload.download = `infos_${dados.Nome.replace(/\s+/g, '_')}.txt`; // Nome do arquivo personalizado
+
+                // Simula o clique para baixar e depois remove o link da memória
+                document.body.appendChild(linkDownload);
+                linkDownload.click();
+                document.body.removeChild(linkDownload);
+            } else {
+                alert("Erro ao encurtar a URL.");
+            }
+        } catch (erro) {
+            console.error("Erro na requisição:", erro);
+            alert("Falha ao comunicar com o servidor.");
+        }
+    });
+</script>
+</body>
+</html>
