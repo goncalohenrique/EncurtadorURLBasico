@@ -3,52 +3,85 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-// Dicionário em memória para guardar as URLs (optei por não usar DB nesse projeto)
+// Usei dictionary para linkar uma url a outra, e salvei em memoria(optei por nao usar DB)
 var urlDatabase = new Dictionary<string, string>();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// Rota da API que recebe o formulario
-app.MapPost("/api/encurtar", ([FromBody] DadosUsuario dados, HttpContext context) =>
+// Rota da API que recebe o formulário atualizada
+app.MapPost("/api/encurtar", ([FromBody] DadosUsuarioRequest dados, HttpContext context) =>
 {
-    // Código curto aleatório de 6 caracteres
-    string codigoCurto = Guid.NewGuid().ToString()[..6];
-    
-    // Monta a URL encurtada com base no servidor atual
-    string urlEncurtada = $"{context.Request.Scheme}://{context.Request.Host}/{codigoCurto}";
+    string codigoFinal;
 
-    urlDatabase[codigoCurto] = dados.UrlOriginal;
+    // 1. Lógica para definir o código curto
+    if (!string.IsNullOrWhiteSpace(dados.CodigoSugerido))
+    {
+        // Usuário escolheu um link personalizado
+        string codigoLimpo = dados.CodigoSugerido.Trim().ToLower();
 
-    var conteudoArquivo = $@"--- INFORMAÇÕES DO ENCURTADOR ---
+        // Validação extra no back-end
+        if (!System.Text.RegularExpressions.Regex.IsMatch(codigoLimpo, "^[a-z0-9\\-_]+$"))
+        {
+             return Results.BadRequest(new { Mensagem = "Código personalizado inválido. Use apenas letras, números, - e _." });
+        }
+
+        // Verificando se a url encurtada ja existe
+        if (urlDatabase.ContainsKey(codigoLimpo))
+        {
+            return Results.Conflict(new { Mensagem = $"O link personalizado '{codigoLimpo}' já está em uso. Escolha outro." });
+        }
+
+        codigoFinal = codigoLimpo;
+    }
+    else
+    {
+        //  Usuário quer um link aleatório
+        codigoFinal = Guid.NewGuid().ToString()[..6].ToLower();
+        
+        //  Garante que o aleatório não colida
+        while (urlDatabase.ContainsKey(codigoFinal))
+        {
+            codigoFinal = Guid.NewGuid().ToString()[..6].ToLower();
+        }
+    }
+
+    //  Salva no dictionary
+    urlDatabase[codigoFinal] = dados.UrlOriginal;
+
+    // Monta resposta
+    string urlEncurtada = $"{context.Request.Scheme}://{context.Request.Host}/{codigoFinal}";
+
+    var conteudoArquivo = $@"--- INFORMAÇÕES DO ENCURTADOR PRO ---
     Nome: {dados.Nome}
     Idade: {dados.Idade}
     URL Original: {dados.UrlOriginal}
     URL Encurtada: {urlEncurtada}
-    ---------------------------------";
-
-    // Retorna a URL e o conteúdo do texto em formato JSON
+    Tipo: {(string.IsNullOrWhiteSpace(dados.CodigoSugerido) ? "Aleatório" : "Personalizado")}
+    -------------------------------------";
+    
     return Results.Ok(new {
         UrlEncurtada = urlEncurtada,
         ConteudoTexto = conteudoArquivo
     });
 });
 
-//  Pega o código da URL e redireciona para a original
+// Rota do redirecionamento 
 app.MapGet("/{codigo}", (string codigo) =>
 {
-    if (urlDatabase.TryGetValue(codigo, out var urlOriginal))
+    if (urlDatabase.TryGetValue(codigo.ToLower(), out var urlOriginal))
     {
         return Results.Redirect(urlOriginal);
     }
-    return Results.NotFound("URL não encontrada ou expirada.");
+    return Results.NotFound("URL não encontrada.");
 });
 
 app.Run();
 
-class DadosUsuario
+class DadosUsuarioRequest
 {
     public string Nome { get; set; } = string.Empty;
     public int Idade { get; set; }
     public string UrlOriginal { get; set; } = string.Empty;
+    public string? CodigoSugerido { get; set; } // Opcional
 }

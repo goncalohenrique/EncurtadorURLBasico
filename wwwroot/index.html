@@ -3,95 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encurtador de URL</title>
+    <title>Encurtador de URL Pro</title>
     <style>
-        body 
-        { 
-            font-family: Arial, sans-serif;
-            max-width: 500px; 
-            margin: 50px auto;
-            padding: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; width: 100%; }
-        button:hover { background-color: #0056b3; }
-        #resultado { margin-top: 20px; padding: 15px; background-color: #e9ecef; display: none; border-radius: 5px; text-align: center; }
-        #resultado a { font-size: 1.2em; font-weight: bold; color: #28a745; text-decoration: none; }
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #28a745;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 { text-align: center; margin-bottom: 1.5rem; color: var(--primary-color); }
+
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        input[type="text"], input[type="number"], input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 1rem;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .radio-option { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+        #containerPersonalizado {
+            display: none; /* Escondido por padrão */
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        button.btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button.btn-submit:hover { background-color: #0056b3; }
+
+        #resultado {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+        }
+
+        .url-copiar-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #c3e6cb;
+        }
+
+        #linkEncurtado {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--secondary-color);
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .btn-copiar {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .btn-copiar:hover { background-color: #e2e6ea; }
+
+        /* Ícone SVG simples de copiar (dois retângulos) */
+        .icon-copy {
+            width: 20px;
+            height: 20px;
+            fill: #6c757d;
+        }
+
     </style>
 </head>
 <body>
 
-<h2>Encurte sua URL</h2>
-<form id="formEncurtador">
-    <div class="form-group">
-        <label for="nome">Nome:</label>
-        <input type="text" id="nome" required>
-    </div>
-    <div class="form-group">
-        <label for="idade">Idade:</label>
-        <input type="number" id="idade" required>
-    </div>
-    <div class="form-group">
-        <label for="urlOriginal">URL Original:</label>
-        <input type="url" id="urlOriginal" placeholder="https://exemplo.com" required>
-    </div>
-    <button type="submit">Encurtar URL</button>
-</form>
+<div class="container">
+    <h2>Encurtador de URL Pro</h2>
+    <form id="formEncurtador">
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" placeholder="Seu nome" required>
+        </div>
+        <div class="form-group">
+            <label for="idade">Idade:</label>
+            <input type="number" id="idade" placeholder="Sua idade" required min="1">
+        </div>
+        <div class="form-group">
+            <label for="urlOriginal">URL Original:</label>
+            <input type="url" id="urlOriginal" placeholder="https://exemplo.com/sua-url-longa" required>
+        </div>
 
-<div id="resultado">
-    <p>Sua URL encurtada é:</p>
-    <a id="linkEncurtado" href="#" target="_blank"></a>
-    <p><small>O download do seu arquivo com as informações iniciará em instantes...</small></p>
+        <label>Tipo de Link Curto:</label>
+        <div class="radio-group">
+            <label class="radio-option">
+                <input type="radio" name="tipoLink" value="aleatorio" checked required> Aleatório
+            </label>
+            <label class="radio-option">
+                <input type="radio" name="tipoLink" value="personalizado"> Personalizado
+            </label>
+        </div>
+
+        <div id="containerPersonalizado" class="form-group">
+            <label for="codigoPersonalizado">Seu texto personalizado:</label>
+            <input type="text" id="codigoPersonalizado" placeholder="ex: minha-loja" pattern="^[a-zA-Z0-9\-_]+$" title="Apenas letras, números, hífen e underline.">
+        </div>
+
+        <button type="submit" class="btn-submit">Gerar Link Curto</button>
+    </form>
+
+    <div id="resultado">
+        <p style="margin: 0 0 10px 0;">Link gerado com sucesso!</p>
+
+        <div class="url-copiar-wrapper">
+            <a id="linkEncurtado" href="#" target="_blank"></a>
+            <button id="btnCopiar" class="btn-copiar" title="Copiar link">
+                <svg class="icon-copy" viewBox="0 0 24 24">
+                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+            </button>
+        </div>
+
+        <p style="margin: 10px 0 0 0;"><small>O download do arquivo iniciará em instantes...</small></p>
+    </div>
 </div>
 
 <script>
-    document.getElementById('formEncurtador').addEventListener('submit', async function(e) {
-        e.preventDefault(); 
+    const form = document.getElementById('formEncurtador');
+    const radioAleatorio = document.querySelector('input[value="aleatorio"]');
+    const radioPersonalizado = document.querySelector('input[value="personalizado"]');
+    const containerPersonalizado = document.getElementById('containerPersonalizado');
+    const inputPersonalizado = document.getElementById('codigoPersonalizado');
+    const divResultado = document.getElementById('resultado');
+    const linkEncurtado = document.getElementById('linkEncurtado');
+    const btnCopiar = document.getElementById('btnCopiar');
+
+    // --- Lógica para mostrar/esconder campo personalizado ---
+    function alternarCampoPersonalizado() {
+        if (radioPersonalizado.checked) {
+            containerPersonalizado.style.display = 'block';
+            inputPersonalizado.required = true;
+        } else {
+            containerPersonalizado.style.display = 'none';
+            inputPersonalizado.required = false;
+            inputPersonalizado.value = ''; // Limpa se desmarcar
+        }    // --- Lógica para mostrar/esconder campo personalizado ---
+
+    }
+
+    radioAleatorio.addEventListener('change', alternarCampoPersonalizado);
+    radioPersonalizado.addEventListener('change', alternarCampoPersonalizado);
+
+    // --- Lógica de Enviar Formulário ---
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
         const dados = {
             Nome: document.getElementById('nome').value,
             Idade: parseInt(document.getElementById('idade').value),
-            UrlOriginal: document.getElementById('urlOriginal').value
+            UrlOriginal: document.getElementById('urlOriginal').value,
+            // Envia o código apenas se for personalizado
+            CodigoSugerido: radioPersonalizado.checked ? inputPersonalizado.value : null
         };
 
         try {
-            // Envia os dados para a API no C#
             const resposta = await fetch('/api/encurtar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
 
+            const resultadoApi = await resposta.json();
+
             if (resposta.ok) {
-                const resultado = await resposta.json();
-
                 // Exibe a nova URL na tela
-                const divResultado = document.getElementById('resultado');
-                const linkEncurtado = document.getElementById('linkEncurtado');
-
-                linkEncurtado.href = resultado.urlEncurtada;
-                linkEncurtado.textContent = resultado.urlEncurtada;
+                linkEncurtado.href = resultadoApi.urlEncurtada;
+                linkEncurtado.textContent = resultadoApi.urlEncurtada;
                 divResultado.style.display = 'block';
 
                 // Lógica para forçar o download do arquivo .txt
-                const blob = new Blob([resultado.conteudoTexto], { type: 'text/plain' });
+                const blob = new Blob([resultadoApi.conteudoTexto], { type: 'text/plain' });
                 const linkDownload = document.createElement('a');
                 linkDownload.href = window.URL.createObjectURL(blob);
-                linkDownload.download = `infos_${dados.Nome.replace(/\s+/g, '_')}.txt`; // Nome do arquivo personalizado
+                linkDownload.download = `infos_${dados.Nome.replace(/\s+/g, '_')}.txt`;
 
-                // Simula o clique para baixar e depois remove o link da memória
                 document.body.appendChild(linkDownload);
                 linkDownload.click();
                 document.body.removeChild(linkDownload);
             } else {
-                alert("Erro ao encurtar a URL.");
+                alert(`Erro: ${resultadoApi.mensagem || "Falha ao encurtar."}`);
+                divResultado.style.display = 'none';
             }
         } catch (erro) {
             console.error("Erro na requisição:", erro);
             alert("Falha ao comunicar com o servidor.");
         }
     });
+
+    // --- Lógica de Copiar Link (Clipboard API) ---
+    btnCopiar.addEventListener('click', async () => {
+        const urlParaCopiar = linkEncurtado.textContent;
+        try {
+            await navigator.clipboard.writeText(urlParaCopiar);
+
+            // Feedback visual temporário no ícone
+            btnCopiar.style.backgroundColor = '#c3e6cb';
+            const originalSvg = btnCopiar.innerHTML;
+            // Ícone de "Check" simples
+            btnCopiar.innerHTML = '<svg class="icon-copy" viewBox="0 0 24 24" fill="#155724"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+
+            setTimeout(() => {
+                btnCopiar.style.backgroundColor = '';
+                btnCopiar.innerHTML = originalSvg;
+            }, 2000); // Volta ao normal após 2 segundos
+
+        } catch (err) {
+            console.error('Falha ao copiar:', err);
+            alert('Não foi possível copiar automaticamente. Por favor, selecione e copie o link manualmete.');
+        }
+    });
+
 </script>
 </body>
 </html>
