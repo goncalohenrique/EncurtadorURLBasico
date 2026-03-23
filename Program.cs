@@ -78,6 +78,7 @@ app.MapGet("/{codigo}", (string codigo) =>
 
 app.Run();
 
+
 class DadosUsuarioRequest
 {
     public string Nome { get; set; } = string.Empty;
